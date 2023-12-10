@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { Link, useNavigate } from 'react-router-dom';
 
 function LoginPage() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+
+    let navigate = useNavigate();
   
     const handleLogin = async (e) => {
       e.preventDefault();
@@ -24,6 +27,8 @@ function LoginPage() {
   
         // Redirect or change the state upon successful login
         console.log('Logged in successfully:', accessToken);
+
+        navigate("/");
       } catch (err) {
         if (err.response) {
           // The request was made and the server responded with a status code

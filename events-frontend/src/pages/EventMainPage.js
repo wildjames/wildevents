@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 
 function EventMainPage() {
@@ -17,6 +18,28 @@ function EventMainPage() {
         // TODO: Check if access token is valid
     }, []);
 
+    /// Fetch a list of the events from the backend
+    const fetchEvents = async () => {
+        try {
+            const accessToken = localStorage.getItem('accessToken');
+            if (!accessToken) {
+                // Redirect to login page
+                navigate('/login');
+            }
+
+            const response = await axios.get('http://localhost:8000/api/events/', {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            });
+
+            console.log('Events fetched successfully:', response.data);
+            // Redirect to another page or show success message
+        } catch (err) {
+            console.error('Failed to fetch events', err);
+        }
+    }
+
     return (
         <div>
             <h1>Event Main Page</h1>
@@ -30,7 +53,9 @@ function EventMainPage() {
             <div>
                 <Link to="/logout">Logout</Link>
             </div>
-            // Then, have a calendar view of events
+            <div>
+                <button onClick={fetchEvents}>Fetch Events</button>
+            </div>
         </div>
     );
 }

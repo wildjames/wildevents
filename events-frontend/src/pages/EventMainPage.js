@@ -1,61 +1,55 @@
-import React, { useEffect } from 'react';
-import axios from 'axios';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+
+import moment from 'moment';
+
+import { Calendar, momentLocalizer } from 'react-big-calendar';
+import 'react-big-calendar/lib/css/react-big-calendar.css';
+
+import LogoutButton from '../components/LogoutButton';
+import { fetchEvents } from '../api/events';
+
 
 function EventMainPage() {
-    let navigate = useNavigate();
+    const [events, setEvents] = useState([]);
 
-    // On load, check for access token in local storage
-    // If not found, redirect to login page
+    const localizer = momentLocalizer(moment);
+
     useEffect(() => {
-        const accessToken = localStorage.getItem('accessToken');
-        if (!accessToken) {
-            // Redirect to login page
-            navigate('/login');
-        }
-
-        console.log("EventMainPage: accessToken:", accessToken);
-        // TODO: Check if access token is valid
+        fetchEvents().then(data => {
+            // Transform the event data into the format expected by the calendar
+            const calendarEvents = data.map(event => ({
+                title: event.name,
+                start: new Date(event.date_time),
+                end: new Date(new Date(event.date_time).getTime() + parseDuration(event.duration)),
+                allDay: false
+            }));
+            setEvents(calendarEvents);
+        });
     }, []);
 
-    /// Fetch a list of the events from the backend
-    const fetchEvents = async () => {
-        try {
-            const accessToken = localStorage.getItem('accessToken');
-            if (!accessToken) {
-                // Redirect to login page
-                navigate('/login');
-            }
-
-            const response = await axios.get('http://localhost:8000/api/events/', {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            });
-
-            console.log('Events fetched successfully:', response.data);
-            // Redirect to another page or show success message
-        } catch (err) {
-            console.error('Failed to fetch events', err);
-        }
-    }
+    // Helper function to convert duration string to milliseconds
+    const parseDuration = (duration) => {
+        const [hours, minutes, seconds] = duration.split(':').map(Number);
+        return ((hours * 60 + minutes) * 60 + seconds) * 1000;
+    };
 
     return (
         <div>
             <h1>Event Main Page</h1>
             <h3>Links:</h3>
-            <div>
-                <Link to="/create_event">Create Event</Link>
-            </div>
-            <div>
-                <Link to="/login">Login</Link>
-            </div>
-            <div>
-                <Link to="/logout">Logout</Link>
-            </div>
-            <div>
-                <button onClick={fetchEvents}>Fetch Events</button>
-            </div>
+            <div><Link to="/create_event">Create Event</Link></div>
+            <div><Link to="/login">Login</Link></div>
+
+            <LogoutButton />
+
+            <Calendar
+                localizer={localizer}
+                events={events}
+                startAccessor="start"
+                endAccessor="end"
+                style={{ height: 500 }}
+            />
         </div>
     );
 }

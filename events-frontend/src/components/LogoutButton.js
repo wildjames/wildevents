@@ -1,20 +1,18 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 
-function LogoutPage() {
-    const [error, setError] = useState('');
-
+function LogoutButton() {
     const handleLogout = async (e) => {
         e.preventDefault();
-        setError(''); // Reset error message
 
         try {
             // Remove access token from local storage
             localStorage.removeItem('accessToken');
-            // Redirect to login page
-            window.location.href = '/login';
+            localStorage.removeItem('refreshToken');
+
+            console.debug("Logged out successfully");
         } catch (err) {
-            setError('Logout failed. Please try again.');
+            console.error('Logout failed. Please try again.');
         }
     };
 
@@ -27,4 +25,4 @@ function LogoutPage() {
     );
 }
 
-export default LogoutPage;
+export default LogoutButton;

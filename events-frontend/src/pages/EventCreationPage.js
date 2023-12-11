@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { createEvent } from '../api/events';
 
 function EventCreationPage() {
     const [name, setName] = useState('');
@@ -10,6 +11,8 @@ function EventCreationPage() {
     const [colour, setColour] = useState('');
     const [notificationCustomMessage, setNotificationCustomMessage] = useState('');
     const [error, setError] = useState('');
+
+    let navigate = useNavigate();
 
     // On load, check for access token in local storage
     // If not found, redirect to login page
@@ -28,11 +31,11 @@ function EventCreationPage() {
         try {
             const accessToken = localStorage.getItem('accessToken');
             if (!accessToken) {
-                // Redirect to login page
                 window.location.href = '/login';
+                return;
             }
 
-            const response = await axios.post('http://localhost:8000/api/events/', {
+            const eventData = {
                 name,
                 description,
                 date_time: date,
@@ -40,14 +43,11 @@ function EventCreationPage() {
                 notify_at: JSON.parse(notifyAt),
                 colour,
                 notification_custom_message: notificationCustomMessage
-            }, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            });
+            };
 
-            console.log('Event created successfully:', response.data);
-            // Redirect to another page or show success message
+            await createEvent(eventData);
+            console.log('Event created successfully');
+            navigate("/");
         } catch (err) {
             setError('Failed to create event. Please try again.');
         }
